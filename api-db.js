@@ -17,6 +17,7 @@ exports.apiDb = function (req, res, obj) {
         );
     } else if (req.pathname.endsWith("/studenti")) {
         let qry = "SELECT s.id,s.jmeno,s.prijmeni,t.rocnik,t.oznaceni as 'oznaceni_tridy',s.cislo_podle_tridnice FROM spaserverexample_studenti s, spaserverexample_tridy t WHERE t.id=s.tridy_id";
+        qry += " AND s.stav=1";
         if (req.parameters.trida) { //pokud je zadana trida, vybereme jen studenty z dane tridy
             qry += " AND t.id="+req.parameters.trida;
         }
@@ -36,9 +37,26 @@ exports.apiDb = function (req, res, obj) {
                 res.end(JSON.stringify(obj));
             }
         );
-    } else {
+    } else if (req.pathname.endsWith("/delstud")){
+       // let qry = "DELETE FROM spaserverexample_studenti WHERE id=" + req.parameters.id;
+        let qry = "UPDATE `spaserverexample_studenti` SET `stav` = '2' WHERE `spaserverexample_studenti`.`id` =" + req.parameters.id;
+
+        connection.query(qry,
+            function (err, rows){
+            if (err){
+                console.error(JSON.stringify({status: "Error", error: err}));
+                obj.error = JSON.stringify(err);
+            } else {
+                console.log ("Deleted student with id:" + req.parameters.id);
+
+            }
+            res.end(JSON.stringify(obj));
+        })
+    }
+
+    else {
         obj.status = -1;
         obj.error = "API not found";
         res.end(JSON.stringify(obj));
     }
-}
+};

@@ -125,7 +125,7 @@
                     } else {
                         let s = ``;
                         for (let st of obj.studenti) {
-                            s += `${st.prijmeni} ${st.jmeno} (${st.rocnik}.${st.oznaceni_tridy}) ${st.cislo_podle_tridnice}<br>`;
+                            s += `<a href = "JavaScript:smazStudenta(${st.id})">[X]</a>${st.prijmeni} ${st.jmeno} (${st.rocnik}.${st.oznaceni_tridy}) ${st.cislo_podle_tridnice}<br>`;
                         }
                         document.getElementById("div_studenti").innerHTML = s;
                     }
@@ -133,6 +133,29 @@
                     ukazChybu(error);
                 });
             });
+        }
+
+        function smazStudenta(id){
+
+            if (!confirm("Opravdu smazat?")) return;
+
+            let url = `${HOST}/db/delstud?id=${id}`;
+
+            fetch(url).then(function (response) {
+                response.text().then(function (text) {
+                    let obj = JSON.parse(text);
+                    if (obj.error) {
+                        ukazChybu(obj.error);
+                        document.getElementById("div_studenti").innerHTML = "";
+                    } else {
+                        dbStudenti();
+                    }
+                }).catch((error) => {
+                    ukazChybu(error);
+                });
+            });
+
+
         }
 
     </script>

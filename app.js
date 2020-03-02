@@ -37,3 +37,6 @@ function processApi(req, res) {
 }
 
 createSpaServer(PORT, processApi);
+
+// ssh to database
+// ssh -L 127.0.0.1:3306:store5.rosti.cz:3306 -p 16347 app@node-13.rosti.cz

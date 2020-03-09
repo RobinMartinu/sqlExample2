@@ -52,6 +52,38 @@ exports.apiDb = function (req, res, obj) {
             }
             res.end(JSON.stringify(obj));
         })
+    }  else if (req.pathname.endsWith("/addstud")){
+
+        let qry = "INSERT INTO `spaserverexample_studenti` (`tridy_id`, `jmeno`, `prijmeni`, `cislo_podle_tridnice`)" +
+            " VALUES ('" + req.parameters.trida +"', '"+ req.parameters.jmeno + "', '" + req.parameters.prijmeni + "', '" + req.parameters.tridnice + "')";
+
+        connection.query(qry,
+            function (err, rows){
+                if (err){
+                    console.error(JSON.stringify({status: "Error", error: err}));
+                    obj.error = JSON.stringify(err);
+                } else {
+                    console.log ("added student:" + req.parameters.jmeno + " " + req.parameters.prijmeni);
+
+
+                }
+                res.end(JSON.stringify(obj));
+            })
+    } else if (req.pathname.endsWith("/editstud")){
+
+        let qry = "UPDATE `spaserverexample_studenti` SET `tridy_id` = '"+ req.parameters.trida+"', `jmeno` = '"+ req.parameters.jmeno +"', `prijmeni` = '"+ req.parameters.prijmeni+"' WHERE `spaserverexample_studenti`.`id` =" + req.parameters.id;
+
+        connection.query(qry,
+            function (err, rows){
+                if (err){
+                    console.error(JSON.stringify({status: "Error", error: err}));
+                    obj.error = JSON.stringify(err);
+                } else {
+                    console.log ("Edited student with id:" + req.parameters.id);
+
+                }
+                res.end(JSON.stringify(obj));
+            })
     }
 
     else {

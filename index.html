@@ -6,6 +6,8 @@
     <script>
         const HOST = window.location.protocol + "//" + window.location.hostname + ((window.location.port) ? ":" + window.location.port : "");
 
+        let studentsInClass;
+
         function ukazChybu(e) {
             console.error('Error:', e.toString());
             let s;
@@ -86,14 +88,15 @@
                         let s = `<a href="./db-setup/index.html" target="_blank" style="background-color: yellow">Příprava databáze</a>`;
                         document.getElementById("div_tridy").innerHTML = s;
                     } else {
-                        let s = `Třídy: <select id="tridy" onchange="dbStudenti()">`;
+                        let s = `Třída:<select id="tridy" onchange="zmenaTridy()">`;
                         s += `<option value="-">- nic -</option>`;
                         s += `<option value="">Vše</option>`;
                         for (let t of obj.tridy) {
                             s += `<option value="${t.id}">${t.rocnik}.${t.oznaceni}</option>`;
                         }
                         s += `</select>`;
-                        s += `&nbsp;&nbsp;&nbsp;<input type="text" id="vyhledat"><input type="button" value="Vyhledat" onclick="dbStudenti()">`;
+                        s += `&nbsp;&nbsp;&nbsp;<input type="text" id="vyhledat"><input type="button" value="Vyhledat"
+onclick="dbStudenti()"><input type="button" value = "Přidat" onclick = "addStudent()"> Změnit třídu při úpravě: <input type="checkbox" id = "zmenaTridy">`;
                         document.getElementById("div_tridy").innerHTML = s;
                     }
                 }).catch((error) => {
@@ -102,6 +105,13 @@
             });
         }
 
+        function zmenaTridy(){
+            if (!document.getElementById("zmenaTridy").checked){
+                dbStudenti();
+            }
+        }
+
+        // adds delete button
         function dbStudenti() {
             let url = `${HOST}/db/studenti?`;
             let t = document.getElementById("tridy").value;
@@ -125,9 +135,10 @@
                     } else {
                         let s = ``;
                         for (let st of obj.studenti) {
-                            s += `<a href = "JavaScript:smazStudenta(${st.id})">[X]</a>${st.prijmeni} ${st.jmeno} (${st.rocnik}.${st.oznaceni_tridy}) ${st.cislo_podle_tridnice}<br>`;
+                            s += `<a href = "JavaScript:smazStudenta(${st.id})">[X]</a>${st.prijmeni} ${st.jmeno} (${st.rocnik}.${st.oznaceni_tridy}) ${st.cislo_podle_tridnice}<a href = "JavaScript:upravitStudenta(${st.id})">[Upravit]</a><br>`;
                         }
                         document.getElementById("div_studenti").innerHTML = s;
+                        studentsInClass = obj.studenti.length;
                     }
                 }).catch((error) => {
                     ukazChybu(error);
@@ -156,6 +167,67 @@
             });
 
 
+        }
+
+        function upravitStudenta(id) {
+
+            let fullName = document.getElementById("vyhledat").value.split(" ");
+            let name = fullName[0];
+            let surname = fullName[1];
+            let trida = document.getElementById("tridy").value;
+            if (trida === "-"){
+                alert("Vyberte třídu!");
+                return;
+            }
+
+            if (!confirm("Opravdu změnit žáka na:" + name + " " + surname + ", " + trida + "?")) return;
+
+            let url = `${HOST}/db/editstud?id=${id}&jmeno=${name}&prijmeni=${surname}&trida=${trida}`;
+
+            fetch(url).then(function (response) {
+                response.text().then(function (text) {
+                    let obj = JSON.parse(text);
+                    if (obj.error) {
+                        ukazChybu(obj.error);
+                        document.getElementById("div_studenti").innerHTML = "";
+                    } else {
+                        document.getElementById("vyhledat").value = "";
+                        dbStudenti();
+                    }
+                }).catch((error) => {
+                    ukazChybu(error);
+                });
+            });
+        }
+
+        function addStudent(){
+            let fullName = document.getElementById("vyhledat").value.split(" ");
+            let name = fullName[0];
+            let surname = fullName[1];
+            let trida = document.getElementById("tridy").value;
+            if (trida === "-"){
+                alert("Vyberte třídu!");
+                return;
+            }
+            let tridnice = studentsInClass + 1;
+            if (!confirm("Opravdu přidat žáka " + name + " " + surname + "?")) return;
+            let url = `${HOST}/db/addstud?jmeno=${name}&prijmeni=${surname}&trida=${trida}&tridnice=${tridnice}`;
+
+
+            fetch(url).then(function (response) {
+                response.text().then(function (text) {
+                    let obj = JSON.parse(text);
+                    if (obj.error) {
+                        ukazChybu(obj.error);
+                        document.getElementById("div_studenti").innerHTML = "";
+                    } else {
+                        document.getElementById("vyhledat").value = "";
+                        dbStudenti();
+                    }
+                }).catch((error) => {
+                    ukazChybu(error);
+                });
+            });
         }
 
     </script>

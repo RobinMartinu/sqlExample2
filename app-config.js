@@ -15,4 +15,4 @@ exports.getAppConfig = function () {
         }
     }
     return appConfig;
-}
+};

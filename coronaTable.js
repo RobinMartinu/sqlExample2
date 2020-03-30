@@ -1,6 +1,7 @@
 google.charts.load('current', {packages: ['corechart', 'line']});
 // google.charts.setOnLoadCallback(drawCurveTypes);
 let objNakazeni = {};
+let objTesty = {};
 
 function poNacteni(){
 
@@ -8,14 +9,27 @@ function poNacteni(){
         fetch(url).then(function (response) {
             response.text().then(function (text) {
                 objNakazeni = JSON.parse(text);
-                drawCurveTypes(objNakazeni);
-                createTable();
+                url = `https://onemocneni-aktualne.mzcr.cz/api/v1/covid-19/testy.json`;
+                    fetch(url).then(function (response) {
+                        response.text().then(function (text) {
+                            objNakazeni = JSON.parse(text);
+
+
+
+                            drawGraphNakazeni(objNakazeni);
+                            createTableNakazeni();
+                        })
+                    });
+
+
+                drawGraphNakazeni(objNakazeni);
+                createTableNakazeni();
             })
         });
 
 }
 
-function drawCurveTypes(inputData) {
+function drawGraphNakazeni(inputData) {
     let data = new google.visualization.DataTable();
     data.addColumn('date', 'X');
     data.addColumn('number', 'Za den');
@@ -45,12 +59,12 @@ function drawCurveTypes(inputData) {
     chart.draw(data, options);
 }
 
-function createTable(){
+function createTableNakazeni(){
     let table = new Tabulator(document.getElementById("example-table"), {
         layout:"fitColumns",
-        // pagination:"local",
-        // paginationSize:10,
-        // paginationSizeSelector:[5, 10, 20],
+        pagination:"local",
+        paginationSize:10,
+        paginationSizeSelector:[5, 10, 20],
         data:objNakazeni, //load data into table
         columns:[
             {title:"Datum", field:"datum", align:"center", sorter:"date", sorterParams:{format:"YYYY-M-D"},
